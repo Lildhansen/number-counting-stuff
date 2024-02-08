@@ -1,5 +1,6 @@
 from random import randint
 from random import shuffle
+import itertools
 
 class Result:
     def __init__(self, nums, acc,exp):
@@ -118,6 +119,31 @@ def printResults(results,verbose=False):
             return
         i += 1
 
-results = getResults([1,2,3,4])
-printResults(results,verbose=True)
+def getMaxNumFromResult(results):
+    maxNum = 0
+    while True:
+        maxNum += 1
+        if maxNum not in results:
+            return maxNum - 1
 
+def pickXBestNumbersInRange(numOfNumbers, lowestNum,highestNum):
+    numberCollections = list(itertools.combinations(range(lowestNum,highestNum+1),numOfNumbers))
+    currentHighestNum = 0
+    currentHighestNumNumbers = []
+    currentHighestNumResults = None
+    for numbers in numberCollections:
+        results = getResults(list(numbers))
+        highestNumForResults = getMaxNumFromResult(results)
+        if highestNumForResults > currentHighestNum:
+            currentHighestNum = highestNumForResults
+            currentHighestNumNumbers = numbers
+            currentHighestNumResults = results
+    print(f"the best {numOfNumbers} numbers between {lowestNum} and {highestNum} (inclusive) is {currentHighestNumNumbers}")
+    print(f"here the highest reachable numbers is {currentHighestNum}")
+    print("the calculations for it are:")
+    printResults(currentHighestNumResults,verbose=True)
+    
+
+# results = getResults([3,4,5])
+# printResults(results,verbose=True)
+pickXBestNumbersInRange(4,1,10)
