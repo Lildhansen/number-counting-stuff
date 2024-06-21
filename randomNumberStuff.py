@@ -39,6 +39,8 @@ def getResults(originalNumbers):
             subExpressions.append(Result(usedNums, acc, expression))
         if not any(result.acc==acc for result in results):
             results.append(Result(usedNums, int(acc), expression))
+    for result in results:
+        result.expression = parenthesisCleanup(result.expression)
     return results
     
 def addOperator(expression):
@@ -142,8 +144,100 @@ def pickXBestNumbersInRange(numOfNumbers, lowestNum,highestNum):
     print(f"here the highest reachable numbers is {currentHighestNum}")
     print("the calculations for it are:")
     printResults(currentHighestNumResults,verbose=True)
-    
 
-# results = getResults([3,4,5])
-# printResults(results,verbose=True)
-pickXBestNumbersInRange(4,1,10)
+def evalNoError(expression):
+    try:
+        res = eval(expression)
+    except:
+        return False
+    return res
+
+
+#fjern:
+    #ydre parentes
+    #parentes om et tal
+    #hvis kun gange/division, fjern alle parenteser
+    #hvis kun +-, fjern alle parenteser (altså i hele udtrykket)
+    #mere generelt - for hvert udtryk med gange/division. fjern parenteser omkring det
+#examples 
+    # ((4)-3)
+    # (((4)+3)-5)
+    # (3)
+    # (((5)+3)-4)
+    # (5)
+    # (((4)+5)-3)
+    # (((4)*(3))-5)
+    # (((3))+5)
+    # ((4)+5)
+def parenthesisCleanup(expression):
+    print("initial expression",expression)
+    expressionCopy = expression
+    opGroup1 = ["+","-"]
+    opGroup2 = ["*","/"]
+    #attempt to remove outer parenthesis
+    if expression[0] == "(" and expression[-1] == ")":
+        newExpression = expression[1:-1]
+        if evalNoError(newExpression) == evalNoError(expression):
+            expression = newExpression
+    #removes full expression if it is only +/- operators or only multiply/division operators (except if it is like (-3))
+    if not any(op in expression for op in opGroup1) or not any(op in expression for op in opGroup2):
+        #will be true if we read the start parenthesis in (-x)
+        readingNegation = False
+        newExpression = ""
+        for i,char in enumerate(expression):
+            if readingNegation:
+                if char == ")":
+                    readingNegation = False
+                continue
+            if char == "(":
+                # print("expression to check",expression)
+                if expression[i+1] == "-" and expression[i+2].isnumeric():
+                    newExpression += expression[i:i+4]
+                    readingNegation = True
+            elif char != ")":
+                newExpression += char
+        expression = newExpression
+        expressionCopy = expression
+    parenthesisStart = False
+    parenthesisStartLocation = -1
+    subExpression = ""
+    for i,char in enumerate(expression):            
+        if char == "(":
+            subExpression = ""
+            parenthesisStart = True
+            parenthesisStartLocation = i
+            subExpression += char
+            continue
+        if parenthesisStart:
+            subExpression += char
+        if char == ")" and parenthesisStart:
+            parenthesisStart = False
+            # if len(subExpression) == 0:
+            #     print("wtf: ",expression, i)
+                # raise Exception("should not be possible")
+            if len(subExpression) == 1:
+                #remove at current location and 2 before
+                expression = expression[:parenthesisStartLocation] + subExpression[1:-1] + expression[i+1:]          
+            elif not any(op in subExpression for op in opGroup1):
+                # print("subexpression", subExpression)
+                # print("sub2: ",subExpression[1:-1])
+                # print("before: ",expression)
+                expression = expression[:parenthesisStartLocation] + subExpression[1:-1] + expression[i+1:]
+                # print("after: ",expression)
+            subExpression = ""
+            if expressionCopy != expression:
+                break
+    if expressionCopy == expression:
+        return expression
+    return parenthesisCleanup(expression)
+            
+            
+        
+            
+
+#     print(parenthesisCleanup(test))     
+# print(parenthesisCleanup("(((5)-3)*(4))"))
+
+results = getResults([3,4,5])
+printResults(results,verbose=True)
+# pickXBestNumbersInRange(4,1,10)
