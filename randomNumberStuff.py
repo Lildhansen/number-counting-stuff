@@ -40,7 +40,7 @@ def getResults(originalNumbers):
         if not any(result.acc==acc for result in results):
             results.append(Result(usedNums, int(acc), expression))
     for result in results:
-        result.expression = parenthesisCleanup(result.expression)
+        result.expression = parenthesisCleanupBruteForce(result.expression)
     return results
     
 def addOperator(expression):
@@ -231,13 +231,29 @@ def parenthesisCleanup(expression):
         return expression
     return parenthesisCleanup(expression)
             
-            
-        
-            
+#make a parenthesis shortener that tries to remove each pair of parenthesis and checks with eval if it is possible
+def parenthesisCleanupBruteForce(expression):
+    for i,char in enumerate(expression):
+        if char == "(":
+            for j in range(i+1,len(expression)):
+                if expression[j] == ")":
+                    newExpression = expression[:i] + expression[i+1:j] + expression[j+1:]
+                    if evalNoError(newExpression) == evalNoError(expression):
+                        return parenthesisCleanupBruteForce(newExpression)
+    return expression
 
 #     print(parenthesisCleanup(test))     
-# print(parenthesisCleanup("(((5)-3)*(4))"))
+# print(parenthesisCleanup("(3*9-6)-4"))
+# print(parenthesisCleanupBruteForce("((6+9)/3)*4"))
 
-results = getResults([3,4,5])
-printResults(results,verbose=True)
+
+#stuff that could be shortened more - with parenthesisCleanup :
+    #(3*9-6)-4 = 3*9-6-4
+    #((6+9)/3)*4 = (6+9)/3*4
+    #3*9-(6-4) = 3*9-6+4
+    #((3+6)/9)+4 = (3+6)/9+4
+
+# results = getResults([3,4,6,9])
+# printResults(results,verbose=True)
 # pickXBestNumbersInRange(4,1,10)
+

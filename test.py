@@ -17,4 +17,4 @@ def test_parenthesisCleanup():
 5+3 = 8
 5+4 = 9
     """
-    
+
